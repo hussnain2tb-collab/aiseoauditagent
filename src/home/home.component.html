@@ -1,0 +1,326 @@
+@switch (currentStep()) {
+  @case ('url') {
+    <div class="text-center animate-fade-in">
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-100 mb-4">Get Your Free Website Audit</h2>
+      <p class="text-lg text-slate-400 mb-8">Choose your audit type and enter a URL to begin.</p>
+      
+      <div class="max-w-xl mx-auto mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+            <button (click)="auditType.set('seo')" [class.bg-sky-600]="auditType() === 'seo'" [class.text-white]="auditType() === 'seo'" class="w-full text-center px-4 py-2 rounded-md font-semibold transition-colors">
+              Technical SEO Audit
+            </button>
+            <button (click)="auditType.set('adsense')" [class.bg-sky-600]="auditType() === 'adsense'" [class.text-white]="auditType() === 'adsense'" class="w-full text-center px-4 py-2 rounded-md font-semibold transition-colors">
+              AdSense Approval Audit
+            </button>
+        </div>
+      </div>
+
+      <form (submit)="submitUrl()" class="flex flex-col sm:flex-row gap-2 max-w-xl mx-auto">
+        <input
+          type="url"
+          [(ngModel)]="url"
+          name="url"
+          placeholder="https://your-website.com"
+          class="flex-grow px-4 py-3 bg-slate-800 border border-slate-600 rounded-md text-lg text-slate-100 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
+          required
+        >
+        <button
+          type="submit"
+          [disabled]="!isUrlValid()"
+          class="px-6 py-3 bg-sky-600 text-white font-bold rounded-md text-lg hover:bg-sky-500 transition-colors disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed"
+        >
+          Analyze Site
+        </button>
+      </form>
+    </div>
+  }
+  @case ('goal') {
+    <div class="text-center animate-fade-in">
+      <h2 class="text-3xl font-bold text-slate-100 mb-2">One Last Question...</h2>
+      <p class="text-lg text-slate-400 mb-8">What is your main goal for <span class="font-semibold text-sky-400">{{ url() }}</span>?</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-3xl mx-auto">
+        @for (g of goals; track g) {
+          <button (click)="selectGoal(g)" class="p-6 bg-slate-800/50 border border-slate-700 rounded-lg text-left hover:bg-slate-700 hover:border-sky-500 transition-all duration-200">
+            <span class="text-lg font-semibold text-slate-200">{{ g }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+  @case ('loading') {
+    <div class="text-center animate-fade-in flex flex-col items-center justify-center pt-16">
+      <div class="w-16 h-16 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mb-6"></div>
+      <h2 class="text-3xl font-bold text-slate-100 mb-2">Performing Audit...</h2>
+      <p class="text-lg text-slate-400">The agent is analyzing <span class="font-semibold text-sky-400">{{ url() }}</span>. This may take a moment.</p>
+    </div>
+  }
+  @case ('error') {
+    <div class="text-center animate-fade-in bg-red-900/20 border border-red-500/50 p-8 rounded-lg">
+      <h2 class="text-3xl font-bold text-red-400 mb-2">Analysis Failed</h2>
+      <p class="text-lg text-slate-300 mb-6">{{ error() }}</p>
+      <button (click)="startNewAudit()" class="px-6 py-3 bg-sky-600 hover:bg-sky-500 rounded-md text-white font-semibold transition-colors duration-200">
+        Try Again
+      </button>
+    </div>
+  }
+  @case ('result') {
+    <div class="animate-fade-in">
+      <div class="mb-10 p-6 bg-slate-800/50 border border-slate-700 rounded-lg flex flex-col sm:flex-row justify-between items-start gap-4">
+          <div>
+            <h2 class="text-3xl font-bold text-slate-100 mb-1">Audit Complete</h2>
+            <p class="text-md text-slate-400">Analysis for: <a [href]="url()" target="_blank" class="text-sky-400 hover:underline">{{ url() }}</a></p>
+             @if (auditType() === 'seo' && goal()) {
+               <p class="text-md text-slate-400">Primary Goal: <span class="font-medium text-slate-300">{{ goal() }}</span></p>
+            } @else if (auditType() === 'adsense') {
+               <p class="text-md text-slate-400">Audit Type: <span class="font-medium text-slate-300">AdSense Approval</span></p>
+            }
+          </div>
+          <button (click)="startNewAudit()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 rounded-md text-white font-semibold transition-colors duration-200 whitespace-nowrap">
+            Start New Audit
+          </button>
+      </div>
+
+      @if (auditType() === 'adsense' && adsenseAuditData(); as data) {
+        <!-- AdSense Readiness Dashboard -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div class="lg:col-span-1 flex flex-col items-center justify-center bg-slate-800/50 border border-slate-700 rounded-lg p-8">
+              <h3 class="text-xl font-bold text-slate-200 mb-4">AdSense Readiness Score</h3>
+              <div class="relative w-40 h-40">
+                <svg class="w-full h-full" viewBox="0 0 100 100">
+                    <circle class="stroke-slate-700" stroke-width="10" cx="50" cy="50" r="45" fill="transparent"></circle>
+                    <circle [class]="scoreColorClass()" class="transform -rotate-90 origin-center transition-all duration-1000" stroke-width="10" cx="50" cy="50" r="45" fill="transparent"
+                        [style.stroke-dasharray]="282.7"
+                        [style.stroke-dashoffset]="282.7 - (282.7 * readinessScore()) / 100"
+                        stroke-linecap="round"></circle>
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-4xl font-bold" [class]="scoreColorClass()">{{ readinessScore() }}%</span>
+                </div>
+              </div>
+              <p class="text-2xl font-semibold mt-4" [class]="scoreColorClass()">{{ readinessStatusText() }}</p>
+              <p class="text-slate-400 mt-1 text-center">This score reflects your site's alignment with AdSense approval criteria.</p>
+          </div>
+          <div class="lg:col-span-2 space-y-4">
+              @if (data.contentQuality; as category) {
+                @let sectionId = 'contentQuality';
+                 <div class="bg-slate-800/70 border border-slate-700 rounded-lg overflow-hidden">
+                    <button (click)="toggleDashboardSection(sectionId)" class="w-full p-4 text-left flex justify-between items-center hover:bg-slate-700/50 transition-colors">
+                      <div class="flex items-center gap-3">
+                        <span class="font-semibold text-lg" [class.text-green-400]="category.status === 'PASS'" [class.text-amber-400]="category.status === 'REVIEW'" [class.text-red-400]="category.status === 'FAIL'">{{ category.status }}</span>
+                        <span class="text-lg text-slate-100">Content Quality</span>
+                      </div>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 transition-transform" [class.rotate-180]="openDashboardSections().has(sectionId)" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                    @if(openDashboardSections().has(sectionId)) {
+                      <div class="p-4 border-t border-slate-700 space-y-4">
+                        @for(item of category.items; track item.title) {
+                          <div>
+                            <p class="font-semibold text-slate-200 mb-1">{{ item.title }}</p>
+                            <p class="text-sm text-slate-400">{{ item.issue }}</p>
+                          </div>
+                        }
+                      </div>
+                    }
+                 </div>
+              }
+               @if (data.userExperience; as category) {
+                @let sectionId = 'userExperience';
+                 <div class="bg-slate-800/70 border border-slate-700 rounded-lg overflow-hidden">
+                    <button (click)="toggleDashboardSection(sectionId)" class="w-full p-4 text-left flex justify-between items-center hover:bg-slate-700/50 transition-colors">
+                      <div class="flex items-center gap-3">
+                        <span class="font-semibold text-lg" [class.text-green-400]="category.status === 'PASS'" [class.text-amber-400]="category.status === 'REVIEW'" [class.text-red-400]="category.status === 'FAIL'">{{ category.status }}</span>
+                        <span class="text-lg text-slate-100">User Experience</span>
+                      </div>
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 transition-transform" [class.rotate-180]="openDashboardSections().has(sectionId)" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                     @if(openDashboardSections().has(sectionId)) {
+                      <div class="p-4 border-t border-slate-700 space-y-4">
+                        @for(item of category.items; track item.title) {
+                          <div>
+                            <p class="font-semibold text-slate-200 mb-1">{{ item.title }}</p>
+                            <p class="text-sm text-slate-400">{{ item.issue }}</p>
+                          </div>
+                        }
+                      </div>
+                    }
+                 </div>
+              }
+               @if (data.requiredPages; as category) {
+                @let sectionId = 'requiredPages';
+                 <div class="bg-slate-800/70 border border-slate-700 rounded-lg overflow-hidden">
+                    <button (click)="toggleDashboardSection(sectionId)" class="w-full p-4 text-left flex justify-between items-center hover:bg-slate-700/50 transition-colors">
+                      <div class="flex items-center gap-3">
+                        <span class="font-semibold text-lg" [class.text-green-400]="category.status === 'PASS'" [class.text-amber-400]="category.status === 'REVIEW'" [class.text-red-400]="category.status === 'FAIL'">{{ category.status }}</span>
+                        <span class="text-lg text-slate-100">Required Pages</span>
+                      </div>
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 transition-transform" [class.rotate-180]="openDashboardSections().has(sectionId)" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                     @if(openDashboardSections().has(sectionId)) {
+                      <div class="p-4 border-t border-slate-700 space-y-4">
+                        @for(item of category.items; track item.title) {
+                          <div>
+                            <p class="font-semibold text-slate-200 mb-1">{{ item.title }}</p>
+                            <p class="text-sm text-slate-400">{{ item.issue }}</p>
+                          </div>
+                        }
+                      </div>
+                    }
+                 </div>
+              }
+               @if (data.policyCompliance; as category) {
+                @let sectionId = 'policyCompliance';
+                 <div class="bg-slate-800/70 border border-slate-700 rounded-lg overflow-hidden">
+                    <button (click)="toggleDashboardSection(sectionId)" class="w-full p-4 text-left flex justify-between items-center hover:bg-slate-700/50 transition-colors">
+                      <div class="flex items-center gap-3">
+                        <span class="font-semibold text-lg" [class.text-green-400]="category.status === 'PASS'" [class.text-amber-400]="category.status === 'REVIEW'" [class.text-red-400]="category.status === 'FAIL'">{{ category.status }}</span>
+                        <span class="text-lg text-slate-100">Policy Compliance</span>
+                      </div>
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 transition-transform" [class.rotate-180]="openDashboardSections().has(sectionId)" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                     @if(openDashboardSections().has(sectionId)) {
+                      <div class="p-4 border-t border-slate-700 space-y-4">
+                        @for(item of category.items; track item.title) {
+                          <div>
+                            <p class="font-semibold text-slate-200 mb-1">{{ item.title }}</p>
+                            <p class="text-sm text-slate-400">{{ item.issue }}</p>
+                          </div>
+                        }
+                      </div>
+                    }
+                 </div>
+              }
+          </div>
+        </div>
+      } @else if (auditResult(); as result) {
+        <!-- Technical SEO Audit View (Original Accordions) -->
+        <!-- Critical Issues -->
+        <section class="mb-8">
+          <h3 class="text-2xl font-bold text-red-400 mb-4 border-b-2 border-red-400/30 pb-2">
+            <span class="inline-block bg-red-500 text-white rounded-full h-8 w-8 text-center leading-8 font-bold mr-3">{{ result.criticalIssues.length }}</span>
+            Critical Issues
+          </h3>
+          @if (result.criticalIssues.length === 0) {
+            <p class="text-slate-400 p-4 bg-slate-800 rounded-md">No critical issues found. Great job!</p>
+          } @else {
+            <div class="space-y-4">
+              @for (item of result.criticalIssues; track item.title; let i = $index) {
+                @let itemId = 'crit-' + i;
+                <div class="bg-slate-800/70 border border-slate-700 rounded-lg overflow-hidden">
+                  <button (click)="toggleAccordion(itemId)" class="w-full p-4 text-left flex justify-between items-center hover:bg-slate-700/50">
+                    <span class="text-lg font-semibold text-slate-100">{{ item.title }}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 transition-transform" [class.rotate-180]="openAccordions().has(itemId)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  @if(openAccordions().has(itemId)) {
+                    <div class="p-4 border-t border-slate-700 bg-slate-800/50 animate-fade-in-down">
+                      <h4 class="font-bold text-red-400 text-md mb-1">The Issue</h4>
+                      <p class="text-slate-300 mb-4">{{ item.issue }}</p>
+                      <h4 class="font-bold text-sky-400 text-md mb-1">The Fix</h4>
+                      <p class="text-slate-300 mb-4 whitespace-pre-wrap">{{ item.fix }}</p>
+                      <h4 class="font-bold text-green-400 text-md mb-1">Expected Outcome</h4>
+                      <p class="text-slate-300 mb-4">{{ item.outcome }}</p>
+                      <h4 class="font-bold text-indigo-400 text-md mb-1">Validation</h4>
+                      <p class="text-slate-300">{{ item.validation }}</p>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </section>
+
+        <!-- Important Optimizations -->
+        <section class="mb-8">
+          <h3 class="text-2xl font-bold text-amber-400 mb-4 border-b-2 border-amber-400/30 pb-2">
+            <span class="inline-block bg-amber-500 text-white rounded-full h-8 w-8 text-center leading-8 font-bold mr-3">{{ result.importantOptimizations.length }}</span>
+            Important Optimizations
+          </h3>
+           @if (result.importantOptimizations.length === 0) {
+            <p class="text-slate-400 p-4 bg-slate-800 rounded-md">No important optimizations found.</p>
+          } @else {
+            <div class="space-y-4">
+              @for (item of result.importantOptimizations; track item.title; let i = $index) {
+                @let itemId = 'imp-' + i;
+                <div class="bg-slate-800/70 border border-slate-700 rounded-lg overflow-hidden">
+                  <button (click)="toggleAccordion(itemId)" class="w-full p-4 text-left flex justify-between items-center hover:bg-slate-700/50">
+                    <span class="text-lg font-semibold text-slate-100">{{ item.title }}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 transition-transform" [class.rotate-180]="openAccordions().has(itemId)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  @if(openAccordions().has(itemId)) {
+                     <div class="p-4 border-t border-slate-700 bg-slate-800/50 animate-fade-in-down">
+                      <h4 class="font-bold text-red-400 text-md mb-1">The Issue</h4>
+                      <p class="text-slate-300 mb-4">{{ item.issue }}</p>
+                      <h4 class="font-bold text-sky-400 text-md mb-1">The Fix</h4>
+                      <p class="text-slate-300 mb-4 whitespace-pre-wrap">{{ item.fix }}</p>
+                      <h4 class="font-bold text-green-400 text-md mb-1">Expected Outcome</h4>
+                      <p class="text-slate-300 mb-4">{{ item.outcome }}</p>
+                      <h4 class="font-bold text-indigo-400 text-md mb-1">Validation</h4>
+                      <p class="text-slate-300">{{ item.validation }}</p>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </section>
+
+        <!-- Recommended Enhancements -->
+        <section>
+          <h3 class="text-2xl font-bold text-sky-400 mb-4 border-b-2 border-sky-400/30 pb-2">
+            <span class="inline-block bg-sky-500 text-white rounded-full h-8 w-8 text-center leading-8 font-bold mr-3">{{ result.recommendedEnhancements.length }}</span>
+            Recommended Enhancements
+          </h3>
+           @if (result.recommendedEnhancements.length === 0) {
+            <p class="text-slate-400 p-4 bg-slate-800 rounded-md">No further enhancements recommended at this time.</p>
+          } @else {
+            <div class="space-y-4">
+              @for (item of result.recommendedEnhancements; track item.title; let i = $index) {
+                 @let itemId = 'rec-' + i;
+                <div class="bg-slate-800/70 border border-slate-700 rounded-lg overflow-hidden">
+                  <button (click)="toggleAccordion(itemId)" class="w-full p-4 text-left flex justify-between items-center hover:bg-slate-700/50">
+                    <span class="text-lg font-semibold text-slate-100">{{ item.title }}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 transition-transform" [class.rotate-180]="openAccordions().has(itemId)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  @if(openAccordions().has(itemId)) {
+                    <div class="p-4 border-t border-slate-700 bg-slate-800/50 animate-fade-in-down">
+                      <h4 class="font-bold text-red-400 text-md mb-1">The Issue</h4>
+                      <p class="text-slate-300 mb-4">{{ item.issue }}</p>
+                      <h4 class="font-bold text-sky-400 text-md mb-1">The Fix</h4>
+                      <p class="text-slate-300 mb-4 whitespace-pre-wrap">{{ item.fix }}</p>
+                      <h4 class="font-bold text-green-400 text-md mb-1">Expected Outcome</h4>
+                      <p class="text-slate-300 mb-4">{{ item.outcome }}</p>
+                      <h4 class="font-bold text-indigo-400 text-md mb-1">Validation</h4>
+                      <p class="text-slate-300">{{ item.validation }}</p>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </section>
+      }
+    </div>
+  }
+}
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+  @keyframes fade-in-down {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in-down {
+    animation: fade-in-down 0.3s ease-out forwards;
+  }
+</style>

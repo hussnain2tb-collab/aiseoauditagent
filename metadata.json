@@ -1,0 +1,5 @@
+{
+  "name": "SEO Audit Agent",
+  "description": "An AI-powered agent that performs a complete technical SEO audit for any provided website and offers prioritized, actionable optimization recommendations.",
+  "requestFramePermissions": []
+}

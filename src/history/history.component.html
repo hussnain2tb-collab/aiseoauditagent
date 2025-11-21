@@ -1,0 +1,85 @@
+
+<div class="animate-fade-in">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-bold text-slate-100">Audit History</h2>
+    @if (history().length > 0) {
+      <button (click)="clearHistory()" class="px-4 py-2 bg-red-600/80 hover:bg-red-500 rounded-md text-white font-semibold transition-colors duration-200 text-sm">
+        Clear History
+      </button>
+    }
+  </div>
+
+  @if (history().length === 0) {
+    <div class="text-center py-16 bg-slate-800/50 border border-slate-700 rounded-lg">
+        <h3 class="text-xl font-semibold text-slate-300">No Audits Found</h3>
+        <p class="text-slate-400">Your completed audits will appear here.</p>
+    </div>
+  } @else {
+    <div class="space-y-4">
+        @for(item of history(); track item.id) {
+            <div class="bg-slate-800/70 border border-slate-700 rounded-lg overflow-hidden">
+                <button (click)="selectItem(item)" class="w-full p-4 text-left flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 hover:bg-slate-700/50 transition-colors">
+                    <div>
+                        <p class="font-semibold text-sky-400">{{ item.url }}</p>
+                        <p class="text-sm text-slate-400">{{ item.auditType }}</p>
+                    </div>
+                    <p class="text-sm text-slate-500 whitespace-nowrap">{{ item.date | date:'medium' }}</p>
+                </button>
+
+                @if (selectedItem()?.id === item.id) {
+                    @if (selectedItem(); as selected) {
+                        <div class="p-4 border-t border-slate-700 bg-slate-800/50 animate-fade-in-down">
+                             <!-- Critical Issues -->
+                            <section class="mb-8">
+                              <h3 class="text-xl font-bold text-red-400 mb-4 border-b border-red-400/30 pb-2">Critical Issues ({{ selected.result.criticalIssues.length }})</h3>
+                              @if (selected.result.criticalIssues.length === 0) {
+                                <p class="text-slate-400">No critical issues found.</p>
+                              } @else {
+                                <div class="space-y-3">
+                                  @for (issue of selected.result.criticalIssues; track issue.title; let i = $index) {
+                                    @let itemId = 'crit-' + i;
+                                    <div class="bg-slate-800 border border-slate-600 rounded-md overflow-hidden">
+                                      <button (click)="toggleAccordion(itemId)" class="w-full p-3 text-left flex justify-between items-center hover:bg-slate-700/50">
+                                        <span class="font-semibold text-slate-200">{{ issue.title }}</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 transition-transform" [class.rotate-180]="openAccordions().has(itemId)" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                      </button>
+                                      @if(openAccordions().has(itemId)) {
+                                        <div class="p-3 border-t border-slate-600 text-sm">
+                                          <h4 class="font-bold text-red-400 mb-1">Issue:</h4>
+                                          <p class="text-slate-300 mb-3">{{ issue.issue }}</p>
+                                          <h4 class="font-bold text-sky-400 mb-1">Fix:</h4>
+                                          <p class="text-slate-300 mb-3 whitespace-pre-wrap">{{ issue.fix }}</p>
+                                          <h4 class="font-bold text-green-400 mb-1">Outcome:</h4>
+                                          <p class="text-slate-300">{{ issue.outcome }}</p>
+                                        </div>
+                                      }
+                                    </div>
+                                  }
+                                </div>
+                              }
+                            </section>
+                            <!-- Other sections follow same pattern -->
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>
+  }
+</div>
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+  @keyframes fade-in-down {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in-down {
+    animation: fade-in-down 0.3s ease-out forwards;
+  }
+</style>

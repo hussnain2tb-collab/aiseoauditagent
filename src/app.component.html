@@ -1,0 +1,36 @@
+<div class="flex flex-col min-h-screen">
+  <header class="w-full p-4 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <a routerLink="/" class="text-2xl font-bold text-sky-400 hover:text-sky-300 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 inline-block mr-2 -mt-1" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12.3,6.36C12.3,6.36,12.3,6.36,12.3,6.36c-0.12-0.12-0.26-0.19-0.42-0.19c-0.16,0-0.3,0.07-0.42,0.19l-2.52,2.52 c-0.23,0.23-0.23,0.61,0,0.85c0.23,0.23,0.61,0.23,0.85,0l1.68-1.68V15.6c0,0.33,0.27,0.6,0.6,0.6s0.6-0.27,0.6-0.6V8.05 l1.68,1.68c0.23,0.23,0.61,0.23,0.85,0c0.23-0.23,0.23-0.61,0-0.85L12.3,6.36z"/>
+          <path d="M19.42,3H4.58C3.71,3,3,3.71,3,4.58v14.83C3,20.29,3.71,21,4.58,21h14.83c0.88,0,1.58-0.71,1.58-1.58V4.58 C21,3.71,20.29,3,19.42,3z M19.8,19.42c0,0.21-0.17,0.38-0.38,0.38H4.58c-0.21,0-0.38-0.17-0.38-0.38V4.58 c0-0.21,0.17-0.38,0.38-0.38h14.83c0.21,0,0.38,0.17,0.38,0.38V19.42z"/>
+        </svg>
+        SEO Audit Agent
+      </a>
+      <nav class="flex items-center gap-6">
+        <a routerLink="/" routerLinkActive="text-sky-400" [routerLinkActiveOptions]="{exact: true}" class="text-slate-300 hover:text-sky-400 font-medium transition-colors">New Audit</a>
+        <a routerLink="/history" routerLinkActive="text-sky-400" class="text-slate-300 hover:text-sky-400 font-medium transition-colors">Audit History</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-grow w-full max-w-5xl mx-auto p-4 md:p-8">
+    <router-outlet></router-outlet>
+  </main>
+
+  <footer class="w-full bg-slate-900/80 border-t border-slate-700/50 mt-8">
+    <div class="max-w-5xl mx-auto p-6 text-slate-400">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p class="text-sm">&copy; 2024 SEO Audit Agent. Powered by Google Gemini.</p>
+            <nav class="flex items-center gap-4 text-sm flex-wrap justify-center">
+                <a routerLink="/about" class="hover:text-sky-400 transition-colors">About Us</a>
+                <a routerLink="/contact" class="hover:text-sky-400 transition-colors">Contact Us</a>
+                <a routerLink="/privacy-policy" class="hover:text-sky-400 transition-colors">Privacy Policy</a>
+                <a routerLink="/terms-and-conditions" class="hover:text-sky-400 transition-colors">Terms & Conditions</a>
+                <a routerLink="/disclaimer" class="hover:text-sky-400 transition-colors">Disclaimer</a>
+            </nav>
+        </div>
+    </div>
+  </footer>
+</div>
